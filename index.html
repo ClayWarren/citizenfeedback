@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Feedback Prototype</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 10px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #feedback-form {
+            margin-bottom: 20px;
+        }
+        #feedback-input {
+            width: 70%;
+            padding: 8px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #feedback-list, #trends {
+            margin-top: 20px;
+        }
+        .feedback-item {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .feedback-item span {
+            margin-right: 10px;
+        }
+        .upvote-btn {
+            background-color: #28a745;
+        }
+        .upvote-btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>Citizen Feedback Prototype</h1>
+    <div id="feedback-form">
+        <input type="text" id="feedback-input" placeholder="Submit feedback, issues, or ideas...">
+        <button onclick="submitFeedback()">Submit</button>
+    </div>
+    <div id="feedback-list"></div>
+    <div id="trends">
+        <h2>Trending Categories</h2>
+        <div id="trends-content"></div>
+    </div>
+
+    <script>
+        // Feedback system state
+        let feedbackItems = JSON.parse(localStorage.getItem('feedbackItems')) || [];
+
+        // Simple categorization logic
+        const categories = {
+            "Infrastructure": ["pothole", "road", "bridge", "car"],
+            "Health": ["health", "hospital", "doctor", "care"],
+            "Education": ["school", "teacher", "student"],
+            "Other": []
+        };
+
+        function categorize(text) {
+            text = text.toLowerCase();
+            for (let category in categories) {
+                if (categories[category].some(keyword => text.includes(keyword))) {
+                    return category;
+                }
+            }
+            return "Other";
+        }
+
+        // Submit feedback
+        function submitFeedback() {
+            const input = document.getElementById('feedback-input');
+            const text = input.value.trim();
+            if (!text) {
+                alert("Please enter some feedback!");
+                return;
+            }
+
+            const item = {
+                text: text,
+                category: categorize(text),
+                timestamp: Date.now(),
+                votes: 1
+            };
+            feedbackItems.push(item);
+            input.value = '';
+            saveAndUpdate();
+        }
+
+        // Upvote feedback
+        function upvote(index) {
+            feedbackItems[index].votes++;
+            saveAndUpdate();
+        }
+
+        // Save to localStorage and update UI
+        function saveAndUpdate() {
+            localStorage.setItem('feedbackItems', JSON.stringify(feedbackItems));
+            updateDashboard();
+        }
+
+        // Update dashboard
+        function updateDashboard() {
+            const list = document.getElementById('feedback-list');
+            const trends = document.getElementById('trends-content');
+            list.innerHTML = '<h2>Recent Feedback</h2>';
+            trends.innerHTML = '';
+
+            if (feedbackItems.length === 0) {
+                list.innerHTML += '<p>No feedback yet!</p>';
+                return;
+            }
+
+            // Sort by votes (descending), then timestamp (newest first)
+            const sortedItems = feedbackItems.slice().sort((a, b) => {
+                return b.votes - a.votes || b.timestamp - a.timestamp;
+            });
+
+            // Display feedback
+            sortedItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'feedback-item';
+                div.innerHTML = `
+                    <span>${item.text}</span>
+                    <span>(Category: ${item.category})</span>
+                    <span>Votes: ${item.votes}</span>
+                    <button class="upvote-btn" onclick="upvote(${feedbackItems.indexOf(item)})">Upvote</button>
+                `;
+                list.appendChild(div);
+            });
+
+            // Calculate and display trends
+            const categoryCounts = {};
+            feedbackItems.forEach(item => {
+                categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
+            });
+            const total = feedbackItems.length;
+            for (let category in categoryCounts) {
+                const percent = (categoryCounts[category] / total * 100).toFixed(1);
+                trends.innerHTML += `<p>${category}: ${categoryCounts[category]} (${percent}%)</p>`;
+            }
+        }
+
+        // Initial load
+        window.onload = updateDashboard;
+
+        // Handle Enter key for submission
+        document.getElementById('feedback-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitFeedback();
+        });
+    </script>
+</body>
+</html>
