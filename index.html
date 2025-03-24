@@ -41,6 +41,7 @@
             gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            position: relative;
         }
         #feedback-input {
             flex: 1;
@@ -65,13 +66,20 @@
             color: #e0e0e0;
             border-radius: 5px;
         }
+        #category-preview {
+            font-size: 0.9em;
+            color: #888;
+            position: absolute;
+            bottom: -20px;
+            left: 10px;
+        }
         button {
             padding: 12px 20px;
             background: #00d4ff;
             color: #1a1a1a;
             border: none;
             border-radius: 5px;
-            font-weight: bold;
+            font .weight: bold;
             cursor: pointer;
             transition: background 0.3s, transform 0.2s;
         }
@@ -85,6 +93,10 @@
         #clear-btn:hover {
             background: #e91e63;
         }
+        #export-btn {
+            background: #555;
+            cursor: not-allowed;
+        }
         #feedback-list, #trends {
             background: #252525;
             padding: 20px;
@@ -97,12 +109,13 @@
             align-items: center;
             padding: 15px;
             border-bottom: 1px solid #333;
-            transition: background 0.3s;
+            transition: background 0.3s, box-shadow 0.3s;
             flex-wrap: wrap;
             gap: 10px;
         }
         .feedback-item:hover {
             background: #333;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
         }
         .feedback-text {
             flex: 1;
@@ -124,7 +137,8 @@
             display: block;
             margin: 10px auto 0;
             background: #555;
-            padding: 8px 15px;
+            padding: 10px 20px;
+            min-width: 120px;
         }
         #more-btn:hover {
             background: #777;
@@ -141,21 +155,41 @@
         }
         .trend-bar {
             height: 20px;
-            background: #00d4ff;
             margin: 5px 0;
             border-radius: 3px;
             transition: width 0.5s;
         }
-        #note {
+        #active-count {
+            text-align: center;
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        #intro {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #00d4ff;
+            font-size: 1.5em;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            transition: opacity 1s;
+            z-index: 1000;
+        }
+        #intro.fade {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #note, #footer {
             font-size: 0.9em;
             color: #888;
             text-align: center;
-            margin-top: 20px;
-        }
-        #footer {
-            text-align: center;
-            font-size: 0.8em;
-            color: #666;
             margin-top: 20px;
         }
         @media (max-width: 600px) {
@@ -171,7 +205,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>Citizen Feedback Grid</h1>
+    <div id="intro">Welcome to the Grid<br>Free for the U.S., Built for the World</div>
+    <h1>Citizen Feedback Grid <span style="font-size: 0.5em; vertical-align: top;">🇺🇸</span></h1>
     <div id="subtitle">Built for the U.S., Ready for the World</div>
     <div id="feedback-form">
         <select id="submission-type">
@@ -179,12 +214,15 @@
             <option value="Issue">Issue</option>
             <option value="Idea">Idea</option>
         </select>
-        <input type="text" id="feedback-input" placeholder="Transmit your signal...">
+        <input type="text" id="feedback-input" maxlength="100" placeholder="Transmit your signal (100 chars max)...">
+        <div id="category-preview"></div>
         <button onclick="submitFeedback()">Send</button>
         <button id="clear-btn" onclick="clearData()">Clear Grid</button>
+        <button id="export-btn" title="Coming with U.S. server sync">Export Data</button>
     </div>
     <div id="feedback-list">
         <h2>Active Transmissions</h2>
+        <div id="active-count">Citizens Active: <span id="active-num">15,672</span></div>
         <div id="visible-items"></div>
         <div id="hidden-items"></div>
         <button id="more-btn" onclick="toggleMore()">View More</button>
@@ -198,55 +236,39 @@
 
     <script>
         let feedbackItems = JSON.parse(localStorage.getItem('feedbackItems')) || [
-            { text: "Cut red tape for businesses", category: "Economy & Financials", timestamp: Date.now() - 3600000, votes: 5, type: "Idea" },
-            { text: "Potholes ruin my Tesla", category: "Infrastructure & Industrials", timestamp: Date.now() - 1800000, votes: 3, type: "Issue" },
-            { text: "Need faster internet in rural areas", category: "Technology & Communication", timestamp: Date.now() - 900000, votes: 4, type: "Feedback" },
-            { text: "More affordable housing now", category: "Social Services", timestamp: Date.now() - 600000, votes: 2, type: "Issue" },
-            { text: "Tax cuts would help small biz", category: "Economy & Financials", timestamp: Date.now() - 300000, votes: 6, type: "Idea" }
+            { text: "Deregulate energy markets", category: "Environment & Energy", timestamp: Date.now() - 3600000, votes: 7, type: "Idea" },
+            { text: "Potholes ruin my commute", category: "Infrastructure & Industrials", timestamp: Date.now() - 1800000, votes: 4, type: "Issue" },
+            { text: "Banks need lower fees", category: "Economy & Financials", timestamp: Date.now() - 900000, votes: 6, type: "Feedback" },
+            { text: "More tech jobs in rural areas", category: "Technology & Communication", timestamp: Date.now() - 600000, votes: 3, type: "Idea" },
+            { text: "Tax cuts for small biz", category: "Economy & Financials", timestamp: Date.now() - 300000, votes: 8, type: "Idea" }
         ];
 
         const categories = {
-            "Infrastructure & Industrials": [
-                "pothole", "road", "highway", "street", "bridge", "car", "traffic", "transport", 
-                "construction", "repair", "sidewalk", "tunnel", "factory", "industry", "machine"
-            ],
-            "Health Care": [
-                "health", "hospital", "doctor", "nurse", "care", "medicine", "clinic", "patient", 
-                "treatment", "disease", "mental", "wellness", "emergency", "vaccine", "pharmacy"
-            ],
-            "Education": [
-                "school", "teacher", "student", "education", "class", "learning", "university", 
-                "college", "book", "curriculum", "funding", "study", "academy", "scholar"
-            ],
-            "Economy & Financials": [
-                "tax", "job", "work", "rent", "cost", "price", "wage", "economy", "business", 
-                "inflation", "money", "pay", "unemployment", "trade", "bank", "finance", "loan"
-            ],
-            "Safety": [
-                "crime", "police", "gun", "safety", "fire", "emergency", "law", "security", 
-                "violence", "protect", "theft", "assault"
-            ],
-            "Environment & Energy": [
-                "climate", "pollution", "water", "air", "solar", "wind", "flood", "forest", 
-                "green", "energy", "oil", "gas", "renewable", "carbon"
-            ],
-            "Governance": [
-                "vote", "law", "politician", "corrupt", "government", "service", "dmv", "policy", 
-                "rights", "election", "bill", "justice"
-            ],
-            "Social Services": [
-                "welfare", "housing", "homeless", "food", "benefit", "shelter", "support", "aid", 
-                "poverty", "assistance", "family"
-            ],
-            "Technology & Communication": [
-                "internet", "wifi", "tech", "ai", "robot", "digital", "website", "app", "software", 
-                "data", "network", "cyber", "phone", "media", "telecom"
-            ],
-            "Consumer Markets": [
-                "shop", "store", "retail", "car", "auto", "food", "drink", "price", "product", 
-                "brand", "buy", "sell", "market", "grocery"
-            ],
+            "Infrastructure & Industrials": ["pothole", "road", "highway", "street", "bridge", "car", "traffic", "transport", "construction", "repair", "sidewalk", "tunnel", "factory", "industry", "machine"],
+            "Health Care": ["health", "hospital", "doctor", "nurse", "care", "medicine", "clinic", "patient", "treatment", "disease", "mental", "wellness", "emergency", "vaccine", "pharmacy"],
+            "Education": ["school", "teacher", "student", "education", "class", "learning", "university", "college", "book", "curriculum", "funding", "study", "academy", "scholar"],
+            "Economy & Financials": ["tax", "job", "work", "rent", "cost", "price", "wage", "economy", "business", "inflation", "money", "pay", "unemployment", "trade", "bank", "finance", "loan"],
+            "Safety": ["crime", "police", "gun", "safety", "fire", "emergency", "law", "security", "violence", "protect", "theft", "assault"],
+            "Environment & Energy": ["climate", "pollution", "water", "air", "solar", "wind", "flood", "forest", "green", "energy", "oil", "gas", "renewable", "carbon"],
+            "Governance": ["vote", "law", "politician", "corrupt", "government", "service", "dmv", "policy", "rights", "election", "bill", "justice"],
+            "Social Services": ["welfare", "housing", "homeless", "food", "benefit", "shelter", "support", "aid", "poverty", "assistance", "family"],
+            "Technology & Communication": ["internet", "wifi", "tech", "ai", "robot", "digital", "website", "app", "software", "data", "network", "cyber", "phone", "media", "telecom"],
+            "Consumer Markets": ["shop", "store", "retail", "car", "auto", "food", "drink", "price", "product", "brand", "buy", "sell", "market", "grocery"],
             "Other": []
+        };
+
+        const trendColors = {
+            "Infrastructure & Industrials": "#00d4ff",
+            "Health Care": "#4caf50",
+            "Education": "#ffeb3b",
+            "Economy & Financials": "#ff4081",
+            "Safety": "#f44336",
+            "Environment & Energy": "#8bc34a",
+            "Governance": "#9c27b0",
+            "Social Services": "#ff9800",
+            "Technology & Communication": "#03a9f4",
+            "Consumer Markets": "#e91e63",
+            "Other": "#888"
         };
 
         function categorize(text) {
@@ -303,6 +325,7 @@
         function saveAndUpdate() {
             localStorage.setItem('feedbackItems', JSON.stringify(feedbackItems));
             updateDashboard();
+            updateCategoryPreview('');
         }
 
         function updateDashboard() {
@@ -351,14 +374,40 @@
             for (let category in categoryCounts) {
                 const percent = (categoryCounts[category] / total * 100).toFixed(1);
                 const width = Math.min(percent * 3, 100);
+                const bold = (category === "Economy & Financials" || category === "Consumer Markets") ? 'font-weight: bold;' : '';
                 trends.innerHTML += `
-                    <p>${category}: <span>${categoryCounts[category]} (${percent}%)</span></p>
-                    <div class="trend-bar" style="width: ${width}%"></div>
+                    <p style="${bold}">${category}: <span>${categoryCounts[category]} (${percent}%)</span></p>
+                    <div class="trend-bar" style="width: ${width}%; background: ${trendColors[category]}"></div>
                 `;
+            }
+
+            updateActiveCount();
+        }
+
+        function updateCategoryPreview(text) {
+            const preview = document.getElementById('category-preview');
+            if (text) {
+                preview.textContent = `Filing under: ${categorize(text)}`;
+            } else {
+                preview.textContent = '';
             }
         }
 
-        window.onload = updateDashboard;
+        function updateActiveCount() {
+            const num = document.getElementById('active-num');
+            let count = parseInt(num.textContent.replace(/,/g, '')) + Math.floor(Math.random() * 10);
+            num.textContent = count.toLocaleString();
+        }
+
+        window.onload = () => {
+            updateDashboard();
+            setTimeout(() => document.getElementById('intro').classList.add('fade'), 3000);
+            setInterval(updateActiveCount, 5000);
+        };
+
+        document.getElementById('feedback-input').addEventListener('input', (e) => {
+            updateCategoryPreview(e.target.value);
+        });
         document.getElementById('feedback-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') submitFeedback();
         });
