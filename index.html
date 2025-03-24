@@ -20,8 +20,14 @@
             text-align: center;
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+        #subtitle {
+            text-align: center;
+            font-size: 1.2em;
+            color: #ff4081;
+            margin-bottom: 30px;
         }
         h2 {
             font-size: 1.5em;
@@ -33,7 +39,7 @@
         #feedback-form {
             display: flex;
             gap: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         #feedback-input {
             flex: 1;
@@ -63,6 +69,13 @@
         button:hover {
             background: #ff4081;
             transform: scale(1.05);
+        }
+        #clear-btn {
+            background: #ff4081;
+            margin-left: 10px;
+        }
+        #clear-btn:hover {
+            background: #e91e63;
         }
         #feedback-list, #trends {
             background: #252525;
@@ -104,20 +117,29 @@
             color: #ff4081;
             font-weight: bold;
         }
+        #note {
+            font-size: 0.9em;
+            color: #888;
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <h1>Citizen Feedback Grid</h1>
+    <div id="subtitle">Built for the U.S., Ready for the World</div>
     <div id="feedback-form">
         <input type="text" id="feedback-input" placeholder="Transmit your signal...">
         <button onclick="submitFeedback()">Send</button>
+        <button id="clear-btn" onclick="clearData()">Clear Grid</button>
     </div>
     <div id="feedback-list"></div>
     <div id="trends">
         <h2>Signal Trends</h2>
         <div id="trends-content"></div>
     </div>
+    <div id="note">Prototype Note: Data stored locally. Server sync coming for U.S. scale.</div>
 
     <script>
         let feedbackItems = JSON.parse(localStorage.getItem('feedbackItems')) || [];
@@ -196,6 +218,14 @@
         function upvote(index) {
             feedbackItems[index].votes++;
             saveAndUpdate();
+        }
+
+        function clearData() {
+            if (confirm("Reset the grid? All transmissions will be cleared.")) {
+                feedbackItems = [];
+                localStorage.removeItem('feedbackItems');
+                saveAndUpdate();
+            }
         }
 
         function saveAndUpdate() {
