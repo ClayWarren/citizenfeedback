@@ -13,4 +13,4 @@ A futuristic platform to amplify citizen voices—submit feedback, upvote priori
 - **Persistent**: Local storage for now; server sync planned.
 
 ## Demo
-Live at: `https://<your-username>.github.io/citizen-feedback/` (update after deployment).
+Live at: https://claywarren.github.io/citizenfeedback/ 
