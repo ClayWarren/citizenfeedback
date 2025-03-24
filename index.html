@@ -40,6 +40,7 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
         #feedback-input {
             flex: 1;
@@ -50,11 +51,19 @@
             border-radius: 5px;
             font-size: 1em;
             transition: border-color 0.3s;
+            min-width: 200px;
         }
         #feedback-input:focus {
             outline: none;
             border-color: #ff4081;
             box-shadow: 0 0 5px rgba(255, 64, 129, 0.5);
+        }
+        #submission-type {
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid #00d4ff;
+            color: #e0e0e0;
+            border-radius: 5px;
         }
         button {
             padding: 12px 20px;
@@ -72,7 +81,6 @@
         }
         #clear-btn {
             background: #ff4081;
-            margin-left: 10px;
         }
         #clear-btn:hover {
             background: #e91e63;
@@ -109,18 +117,26 @@
         .upvote-btn:hover {
             background: #00d4ff;
         }
-        #trends-content p {
-            margin: 10px 0;
-            color: #e0e0e0;
+        #trends-content {
+            margin-top: 20px;
         }
-        #trends-content span {
-            color: #ff4081;
-            font-weight: bold;
+        .trend-bar {
+            height: 20px;
+            background: #00d4ff;
+            margin: 5px 0;
+            border-radius: 3px;
+            transition: width 0.5s;
         }
         #note {
             font-size: 0.9em;
             color: #888;
             text-align: center;
+            margin-top: 20px;
+        }
+        #footer {
+            text-align: center;
+            font-size: 0.8em;
+            color: #666;
             margin-top: 20px;
         }
     </style>
@@ -130,6 +146,11 @@
     <h1>Citizen Feedback Grid</h1>
     <div id="subtitle">Built for the U.S., Ready for the World</div>
     <div id="feedback-form">
+        <select id="submission-type">
+            <option value="Feedback">Feedback</option>
+            <option value="Issue">Issue</option>
+            <option value="Idea">Idea</option>
+        </select>
         <input type="text" id="feedback-input" placeholder="Transmit your signal...">
         <button onclick="submitFeedback()">Send</button>
         <button id="clear-btn" onclick="clearData()">Clear Grid</button>
@@ -140,48 +161,57 @@
         <div id="trends-content"></div>
     </div>
     <div id="note">Prototype Note: Data stored locally. Server sync coming for U.S. scale.</div>
+    <div id="footer">Powered by xAI</div>
 
     <script>
-        let feedbackItems = JSON.parse(localStorage.getItem('feedbackItems')) || [];
+        let feedbackItems = JSON.parse(localStorage.getItem('feedbackItems')) || [
+            { text: "Cut red tape for businesses", category: "Economy & Financials", timestamp: Date.now() - 3600000, votes: 5, type: "Idea" },
+            { text: "Potholes ruin my Tesla", category: "Infrastructure & Industrials", timestamp: Date.now() - 1800000, votes: 3, type: "Issue" },
+            { text: "Need faster internet in rural areas", category: "Technology & Communication", timestamp: Date.now() - 900000, votes: 4, type: "Feedback" },
+            { text: "More affordable housing now", category: "Social Services", timestamp: Date.now() - 600000, votes: 2, type: "Issue" },
+            { text: "Tax cuts would help small biz", category: "Economy & Financials", timestamp: Date.now() - 300000, votes: 6, type: "Idea" }
+        ];
+
         const categories = {
-            "Infrastructure": [
-                "pothole", "road", "highway", "street", "bridge", "car", "traffic", 
-                "transport", "construction", "repair", "sidewalk", "tunnel", "power", 
-                "water", "grid", "utility"
+            "Infrastructure & Industrials": [
+                "pothole", "road", "highway", "street", "bridge", "car", "traffic", "transport", 
+                "construction", "repair", "sidewalk", "tunnel", "factory", "industry", "machine"
             ],
-            "Health": [
-                "health", "hospital", "doctor", "nurse", "care", "medicine", "clinic", 
-                "patient", "treatment", "disease", "mental", "wellness", "emergency", 
-                "vaccine", "pharmacy"
+            "Health Care": [
+                "health", "hospital", "doctor", "nurse", "care", "medicine", "clinic", "patient", 
+                "treatment", "disease", "mental", "wellness", "emergency", "vaccine", "pharmacy"
             ],
             "Education": [
-                "school", "teacher", "student", "education", "class", "learning", 
-                "university", "college", "book", "curriculum", "funding", "study", 
-                "academy", "scholar"
+                "school", "teacher", "student", "education", "class", "learning", "university", 
+                "college", "book", "curriculum", "funding", "study", "academy", "scholar"
             ],
-            "Economy": [
-                "tax", "job", "work", "rent", "cost", "price", "wage", "economy", 
-                "business", "inflation", "money", "pay", "unemployment", "trade"
+            "Economy & Financials": [
+                "tax", "job", "work", "rent", "cost", "price", "wage", "economy", "business", 
+                "inflation", "money", "pay", "unemployment", "trade", "bank", "finance", "loan"
             ],
             "Safety": [
-                "crime", "police", "gun", "safety", "fire", "emergency", "law", 
-                "security", "violence", "protect", "theft", "assault"
+                "crime", "police", "gun", "safety", "fire", "emergency", "law", "security", 
+                "violence", "protect", "theft", "assault"
             ],
-            "Environment": [
-                "climate", "pollution", "water", "air", "solar", "wind", "flood", 
-                "forest", "green", "energy", "recycle", "weather", "earth"
+            "Environment & Energy": [
+                "climate", "pollution", "water", "air", "solar", "wind", "flood", "forest", 
+                "green", "energy", "oil", "gas", "renewable", "carbon"
             ],
             "Governance": [
-                "vote", "law", "politician", "corrupt", "government", "service", 
-                "dmv", "policy", "rights", "election", "bill", "justice"
+                "vote", "law", "politician", "corrupt", "government", "service", "dmv", "policy", 
+                "rights", "election", "bill", "justice"
             ],
             "Social Services": [
-                "welfare", "housing", "homeless", "food", "benefit", "shelter", 
-                "support", "aid", "poverty", "assistance", "family"
+                "welfare", "housing", "homeless", "food", "benefit", "shelter", "support", "aid", 
+                "poverty", "assistance", "family"
             ],
-            "Technology": [
-                "internet", "wifi", "tech", "ai", "robot", "digital", "website", 
-                "app", "software", "data", "network", "cyber"
+            "Technology & Communication": [
+                "internet", "wifi", "tech", "ai", "robot", "digital", "website", "app", "software", 
+                "data", "network", "cyber", "phone", "media", "telecom"
+            ],
+            "Consumer Markets": [
+                "shop", "store", "retail", "car", "auto", "food", "drink", "price", "product", 
+                "brand", "buy", "sell", "market", "grocery"
             ],
             "Other": []
         };
@@ -198,6 +228,7 @@
 
         function submitFeedback() {
             const input = document.getElementById('feedback-input');
+            const type = document.getElementById('submission-type').value;
             const text = input.value.trim();
             if (!text) {
                 alert("Signal too weak—amplify your input!");
@@ -208,7 +239,8 @@
                 text: text,
                 category: categorize(text),
                 timestamp: Date.now(),
-                votes: 1
+                votes: 1,
+                type: type
             };
             feedbackItems.push(item);
             input.value = '';
@@ -253,7 +285,7 @@
                 div.className = 'feedback-item';
                 div.innerHTML = `
                     <span class="feedback-text">${item.text}</span>
-                    <span class="feedback-meta">[${item.category}]</span>
+                    <span class="feedback-meta">[${item.type} - ${item.category}]</span>
                     <span class="feedback-meta">Power: ${item.votes}</span>
                     <button class="upvote-btn" onclick="upvote(${feedbackItems.indexOf(item)})">Amplify</button>
                 `;
@@ -267,7 +299,11 @@
             const total = feedbackItems.length;
             for (let category in categoryCounts) {
                 const percent = (categoryCounts[category] / total * 100).toFixed(1);
-                trends.innerHTML += `<p>${category}: <span>${categoryCounts[category]} (${percent}%)</span></p>`;
+                const width = Math.min(percent * 3, 100); // Cap at 100% width
+                trends.innerHTML += `
+                    <p>${category}: <span>${categoryCounts[category]} (${percent}%)</span></p>
+                    <div class="trend-bar" style="width: ${width}%"></div>
+                `;
             }
         }
 
