@@ -1,17 +1,16 @@
-# Citizen Feedback Prototype
+# Citizen Feedback Grid
 
-A web-based platform to give people a real voice by submitting feedback, issues, or ideas, upvoting what matters, and seeing real-time trends. Built as a static site for deployment on GitHub Pages—no backend required.
+A futuristic platform to amplify citizen voices—submit feedback, upvote priorities, and track real-time trends. Offered free to the U.S. government, with a scalable model for global licensing.
+
+## Vision
+- **U.S.**: Free for federal, state, and local use—built to empower 69+ million Americans (20% adoption target).
+- **Global**: Licensed to governments worldwide, scaling to 100–150 million users across 10+ countries.
 
 ## Features
-- **Submit Feedback**: Add your thoughts via a simple input form.
-- **Upvote**: Boost the visibility of submissions you support.
-- **Real-Time Dashboard**: See recent feedback sorted by votes and trending categories.
-- **Persistent Storage**: Data sticks around between refreshes using `localStorage`.
+- **Transmit Signals**: Submit feedback, issues, or ideas.
+- **Amplify**: Upvote to boost what matters.
+- **Real-Time Grid**: See trends across 9 categories (Infrastructure, Health, Education, Economy, Safety, Environment, Governance, Social Services, Technology).
+- **Persistent**: Local storage for now; server sync planned.
 
 ## Demo
-Check it out live at: `https://<your-username>.github.io/citizen-feedback/` (replace with your actual URL after deployment).
-
-## How It Works
-1. **Submission**: Enter text (e.g., "Potholes are killing my car") and submit. It’s auto-categorized (e.g., "Infrastructure").
-2. **Upvoting**: Click "Upvote" to increase an item’s score, re-sorting the list instantly.
-3. **Trends**: Categories (Infrastructure, Health, Education, Other) show as percentages based on submissions.
+Live at: `https://<your-username>.github.io/citizen-feedback/` (update after deployment).
