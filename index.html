@@ -122,9 +122,45 @@
     <script>
         let feedbackItems = JSON.parse(localStorage.getItem('feedbackItems')) || [];
         const categories = {
-            "Infrastructure": ["pothole", "road", "bridge", "car"],
-            "Health": ["health", "hospital", "doctor", "care"],
-            "Education": ["school", "teacher", "student"],
+            "Infrastructure": [
+                "pothole", "road", "highway", "street", "bridge", "car", "traffic", 
+                "transport", "construction", "repair", "sidewalk", "tunnel", "power", 
+                "water", "grid", "utility"
+            ],
+            "Health": [
+                "health", "hospital", "doctor", "nurse", "care", "medicine", "clinic", 
+                "patient", "treatment", "disease", "mental", "wellness", "emergency", 
+                "vaccine", "pharmacy"
+            ],
+            "Education": [
+                "school", "teacher", "student", "education", "class", "learning", 
+                "university", "college", "book", "curriculum", "funding", "study", 
+                "academy", "scholar"
+            ],
+            "Economy": [
+                "tax", "job", "work", "rent", "cost", "price", "wage", "economy", 
+                "business", "inflation", "money", "pay", "unemployment", "trade"
+            ],
+            "Safety": [
+                "crime", "police", "gun", "safety", "fire", "emergency", "law", 
+                "security", "violence", "protect", "theft", "assault"
+            ],
+            "Environment": [
+                "climate", "pollution", "water", "air", "solar", "wind", "flood", 
+                "forest", "green", "energy", "recycle", "weather", "earth"
+            ],
+            "Governance": [
+                "vote", "law", "politician", "corrupt", "government", "service", 
+                "dmv", "policy", "rights", "election", "bill", "justice"
+            ],
+            "Social Services": [
+                "welfare", "housing", "homeless", "food", "benefit", "shelter", 
+                "support", "aid", "poverty", "assistance", "family"
+            ],
+            "Technology": [
+                "internet", "wifi", "tech", "ai", "robot", "digital", "website", 
+                "app", "software", "data", "network", "cyber"
+            ],
             "Other": []
         };
 
