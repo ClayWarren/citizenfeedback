@@ -98,6 +98,8 @@
             padding: 15px;
             border-bottom: 1px solid #333;
             transition: background 0.3s;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .feedback-item:hover {
             background: #333;
@@ -105,10 +107,11 @@
         .feedback-text {
             flex: 1;
             color: #e0e0e0;
+            min-width: 150px;
         }
         .feedback-meta {
             color: #00d4ff;
-            margin: 0 20px;
+            margin: 0 10px;
         }
         .upvote-btn {
             background: #ff4081;
@@ -116,6 +119,22 @@
         }
         .upvote-btn:hover {
             background: #00d4ff;
+        }
+        #more-btn {
+            display: block;
+            margin: 10px auto 0;
+            background: #555;
+            padding: 8px 15px;
+        }
+        #more-btn:hover {
+            background: #777;
+            transform: none;
+        }
+        #hidden-items {
+            display: none;
+        }
+        #hidden-items.visible {
+            display: block;
         }
         #trends-content {
             margin-top: 20px;
@@ -139,6 +158,15 @@
             color: #666;
             margin-top: 20px;
         }
+        @media (max-width: 600px) {
+            .feedback-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .upvote-btn {
+                margin-top: 10px;
+            }
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
@@ -155,7 +183,12 @@
         <button onclick="submitFeedback()">Send</button>
         <button id="clear-btn" onclick="clearData()">Clear Grid</button>
     </div>
-    <div id="feedback-list"></div>
+    <div id="feedback-list">
+        <h2>Active Transmissions</h2>
+        <div id="visible-items"></div>
+        <div id="hidden-items"></div>
+        <button id="more-btn" onclick="toggleMore()">View More</button>
+    </div>
     <div id="trends">
         <h2>Signal Trends</h2>
         <div id="trends-content"></div>
@@ -260,19 +293,30 @@
             }
         }
 
+        function toggleMore() {
+            const hidden = document.getElementById('hidden-items');
+            const btn = document.getElementById('more-btn');
+            hidden.classList.toggle('visible');
+            btn.textContent = hidden.classList.contains('visible') ? 'View Less' : 'View More';
+        }
+
         function saveAndUpdate() {
             localStorage.setItem('feedbackItems', JSON.stringify(feedbackItems));
             updateDashboard();
         }
 
         function updateDashboard() {
-            const list = document.getElementById('feedback-list');
+            const visibleList = document.getElementById('visible-items');
+            const hiddenList = document.getElementById('hidden-items');
             const trends = document.getElementById('trends-content');
-            list.innerHTML = '<h2>Active Transmissions</h2>';
+            const moreBtn = document.getElementById('more-btn');
+            visibleList.innerHTML = '';
+            hiddenList.innerHTML = '';
             trends.innerHTML = '';
 
             if (feedbackItems.length === 0) {
-                list.innerHTML += '<p>No signals detected yet.</p>';
+                visibleList.innerHTML = '<p>No signals detected yet.</p>';
+                moreBtn.style.display = 'none';
                 return;
             }
 
@@ -289,8 +333,15 @@
                     <span class="feedback-meta">Power: ${item.votes}</span>
                     <button class="upvote-btn" onclick="upvote(${feedbackItems.indexOf(item)})">Amplify</button>
                 `;
-                list.appendChild(div);
+                if (index < 3) {
+                    visibleList.appendChild(div);
+                } else {
+                    hiddenList.appendChild(div);
+                }
             });
+
+            moreBtn.style.display = sortedItems.length > 3 ? 'block' : 'none';
+            moreBtn.textContent = 'View More';
 
             const categoryCounts = {};
             feedbackItems.forEach(item => {
@@ -299,7 +350,7 @@
             const total = feedbackItems.length;
             for (let category in categoryCounts) {
                 const percent = (categoryCounts[category] / total * 100).toFixed(1);
-                const width = Math.min(percent * 3, 100); // Cap at 100% width
+                const width = Math.min(percent * 3, 100);
                 trends.innerHTML += `
                     <p>${category}: <span>${categoryCounts[category]} (${percent}%)</span></p>
                     <div class="trend-bar" style="width: ${width}%"></div>
