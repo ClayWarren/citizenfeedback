@@ -3,71 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Citizen Feedback Prototype</title>
+    <title>Citizen Feedback Grid</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 0 10px;
+            font-family: 'Roboto', Arial, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
         }
         h1 {
+            font-size: 2.5em;
+            color: #00d4ff;
             text-align: center;
-            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+        h2 {
+            font-size: 1.5em;
+            color: #ff4081;
+            margin-top: 40px;
+            border-bottom: 2px solid #ff4081;
+            padding-bottom: 5px;
         }
         #feedback-form {
-            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
         }
         #feedback-input {
-            width: 70%;
-            padding: 8px;
-            margin-right: 10px;
+            flex: 1;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid #00d4ff;
+            color: #e0e0e0;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        #feedback-input:focus {
+            outline: none;
+            border-color: #ff4081;
+            box-shadow: 0 0 5px rgba(255, 64, 129, 0.5);
         }
         button {
-            padding: 8px 15px;
-            background-color: #007bff;
-            color: white;
+            padding: 12px 20px;
+            background: #00d4ff;
+            color: #1a1a1a;
             border: none;
+            border-radius: 5px;
+            font-weight: bold;
             cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
         }
         button:hover {
-            background-color: #0056b3;
+            background: #ff4081;
+            transform: scale(1.05);
         }
         #feedback-list, #trends {
-            margin-top: 20px;
+            background: #252525;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
         }
         .feedback-item {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            transition: background 0.3s;
         }
-        .feedback-item span {
-            margin-right: 10px;
+        .feedback-item:hover {
+            background: #333;
+        }
+        .feedback-text {
+            flex: 1;
+            color: #e0e0e0;
+        }
+        .feedback-meta {
+            color: #00d4ff;
+            margin: 0 20px;
         }
         .upvote-btn {
-            background-color: #28a745;
+            background: #ff4081;
+            padding: 8px 15px;
         }
         .upvote-btn:hover {
-            background-color: #218838;
+            background: #00d4ff;
+        }
+        #trends-content p {
+            margin: 10px 0;
+            color: #e0e0e0;
+        }
+        #trends-content span {
+            color: #ff4081;
+            font-weight: bold;
         }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h1>Citizen Feedback Prototype</h1>
+    <h1>Citizen Feedback Grid</h1>
     <div id="feedback-form">
-        <input type="text" id="feedback-input" placeholder="Submit feedback, issues, or ideas...">
-        <button onclick="submitFeedback()">Submit</button>
+        <input type="text" id="feedback-input" placeholder="Transmit your signal...">
+        <button onclick="submitFeedback()">Send</button>
     </div>
     <div id="feedback-list"></div>
     <div id="trends">
-        <h2>Trending Categories</h2>
+        <h2>Signal Trends</h2>
         <div id="trends-content"></div>
     </div>
 
     <script>
-        // Feedback system state
         let feedbackItems = JSON.parse(localStorage.getItem('feedbackItems')) || [];
-
-        // Simple categorization logic
         const categories = {
             "Infrastructure": ["pothole", "road", "bridge", "car"],
             "Health": ["health", "hospital", "doctor", "care"],
@@ -85,12 +138,11 @@
             return "Other";
         }
 
-        // Submit feedback
         function submitFeedback() {
             const input = document.getElementById('feedback-input');
             const text = input.value.trim();
             if (!text) {
-                alert("Please enter some feedback!");
+                alert("Signal too weak—amplify your input!");
                 return;
             }
 
@@ -105,49 +157,43 @@
             saveAndUpdate();
         }
 
-        // Upvote feedback
         function upvote(index) {
             feedbackItems[index].votes++;
             saveAndUpdate();
         }
 
-        // Save to localStorage and update UI
         function saveAndUpdate() {
             localStorage.setItem('feedbackItems', JSON.stringify(feedbackItems));
             updateDashboard();
         }
 
-        // Update dashboard
         function updateDashboard() {
             const list = document.getElementById('feedback-list');
             const trends = document.getElementById('trends-content');
-            list.innerHTML = '<h2>Recent Feedback</h2>';
+            list.innerHTML = '<h2>Active Transmissions</h2>';
             trends.innerHTML = '';
 
             if (feedbackItems.length === 0) {
-                list.innerHTML += '<p>No feedback yet!</p>';
+                list.innerHTML += '<p>No signals detected yet.</p>';
                 return;
             }
 
-            // Sort by votes (descending), then timestamp (newest first)
             const sortedItems = feedbackItems.slice().sort((a, b) => {
                 return b.votes - a.votes || b.timestamp - a.timestamp;
             });
 
-            // Display feedback
             sortedItems.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'feedback-item';
                 div.innerHTML = `
-                    <span>${item.text}</span>
-                    <span>(Category: ${item.category})</span>
-                    <span>Votes: ${item.votes}</span>
-                    <button class="upvote-btn" onclick="upvote(${feedbackItems.indexOf(item)})">Upvote</button>
+                    <span class="feedback-text">${item.text}</span>
+                    <span class="feedback-meta">[${item.category}]</span>
+                    <span class="feedback-meta">Power: ${item.votes}</span>
+                    <button class="upvote-btn" onclick="upvote(${feedbackItems.indexOf(item)})">Amplify</button>
                 `;
                 list.appendChild(div);
             });
 
-            // Calculate and display trends
             const categoryCounts = {};
             feedbackItems.forEach(item => {
                 categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
@@ -155,14 +201,11 @@
             const total = feedbackItems.length;
             for (let category in categoryCounts) {
                 const percent = (categoryCounts[category] / total * 100).toFixed(1);
-                trends.innerHTML += `<p>${category}: ${categoryCounts[category]} (${percent}%)</p>`;
+                trends.innerHTML += `<p>${category}: <span>${categoryCounts[category]} (${percent}%)</span></p>`;
             }
         }
 
-        // Initial load
         window.onload = updateDashboard;
-
-        // Handle Enter key for submission
         document.getElementById('feedback-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') submitFeedback();
         });
