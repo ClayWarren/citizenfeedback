@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Citizen Feedback Grid</title>
+    <link rel="manifest" href="/manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Roboto', Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             background: #1a1a1a;
             color: #e0e0e0;
-            max-width: 900px;
-            margin: 0 auto;
+            margin: 0;
             padding: 20px;
             line-height: 1.6;
+            overscroll-behavior: none; /* Prevent overscroll bounce */
         }
         h1 {
             font-size: 2.5em;
@@ -28,13 +32,6 @@
             font-size: 1.2em;
             color: #ff4081;
             margin-bottom: 30px;
-        }
-        h2 {
-            font-size: 1.5em;
-            color: #ff4081;
-            margin-top: 40px;
-            border-bottom: 2px solid #ff4081;
-            padding-bottom: 5px;
         }
         #feedback-form {
             display: flex;
@@ -66,20 +63,13 @@
             color: #e0e0e0;
             border-radius: 5px;
         }
-        #category-preview {
-            font-size: 0.9em;
-            color: #888;
-            position: absolute;
-            bottom: -20px;
-            left: 10px;
-        }
         button {
             padding: 12px 20px;
             background: #00d4ff;
             color: #1a1a1a;
             border: none;
             border-radius: 5px;
-            font .weight: bold;
+            font-weight: bold;
             cursor: pointer;
             transition: background 0.3s, transform 0.2s;
         }
@@ -97,11 +87,12 @@
             background: #555;
             cursor: not-allowed;
         }
-        #feedback-list, #trends {
+        .section {
             background: #252525;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            margin-top: 20px;
         }
         .feedback-item {
             display: flex;
@@ -149,9 +140,6 @@
         }
         #hidden-items.visible {
             display: block;
-        }
-        #trends-content {
-            margin-top: 20px;
         }
         .trend-bar {
             height: 20px;
@@ -202,7 +190,6 @@
             }
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="intro">Welcome to the Grid<br>Free for the U.S., Built for the World</div>
@@ -220,29 +207,22 @@
         <button id="clear-btn" onclick="clearData()">Clear Grid</button>
         <button id="export-btn" title="Coming with U.S. server sync">Export Data</button>
     </div>
-    <div id="feedback-list">
+    <div class="section" id="feedback-list">
         <h2>Active Transmissions</h2>
         <div id="active-count">Citizens Active: <span id="active-num">15,672</span></div>
         <div id="visible-items"></div>
         <div id="hidden-items"></div>
         <button id="more-btn" onclick="toggleMore()">View More</button>
     </div>
-    <div id="trends">
+    <div class="section" id="trends">
         <h2>Signal Trends</h2>
         <div id="trends-content"></div>
     </div>
-    <div id="note">Prototype Note: Data stored locally. Server sync coming for U.S. scale.</div>
+    <div id="note">Hosted on Vercel - Optimized for Speed</div>
     <div id="footer">Powered by xAI</div>
 
     <script>
-        let feedbackItems = JSON.parse(localStorage.getItem('feedbackItems')) || [
-            { text: "Deregulate energy markets", category: "Environment & Energy", timestamp: Date.now() - 3600000, votes: 7, type: "Idea" },
-            { text: "Potholes ruin my commute", category: "Infrastructure & Industrials", timestamp: Date.now() - 1800000, votes: 4, type: "Issue" },
-            { text: "Banks need lower fees", category: "Economy & Financials", timestamp: Date.now() - 900000, votes: 6, type: "Feedback" },
-            { text: "More tech jobs in rural areas", category: "Technology & Communication", timestamp: Date.now() - 600000, votes: 3, type: "Idea" },
-            { text: "Tax cuts for small biz", category: "Economy & Financials", timestamp: Date.now() - 300000, votes: 8, type: "Idea" }
-        ];
-
+        let feedbackItems = JSON.parse(localStorage.getItem('feedbackItems')) || [];
         const categories = {
             "Infrastructure & Industrials": ["pothole", "road", "highway", "street", "bridge", "car", "traffic", "transport", "construction", "repair", "sidewalk", "tunnel", "factory", "industry", "machine"],
             "Health Care": ["health", "hospital", "doctor", "nurse", "care", "medicine", "clinic", "patient", "treatment", "disease", "mental", "wellness", "emergency", "vaccine", "pharmacy"],
@@ -256,7 +236,6 @@
             "Consumer Markets": ["shop", "store", "retail", "car", "auto", "food", "drink", "price", "product", "brand", "buy", "sell", "market", "grocery"],
             "Other": []
         };
-
         const trendColors = {
             "Infrastructure & Industrials": "#00d4ff",
             "Health Care": "#4caf50",
@@ -289,14 +268,7 @@
                 alert("Signal too weak—amplify your input!");
                 return;
             }
-
-            const item = {
-                text: text,
-                category: categorize(text),
-                timestamp: Date.now(),
-                votes: 1,
-                type: type
-            };
+            const item = { text, category: categorize(text), timestamp: Date.now(), votes: 1, type };
             feedbackItems.push(item);
             input.value = '';
             saveAndUpdate();
@@ -343,10 +315,7 @@
                 return;
             }
 
-            const sortedItems = feedbackItems.slice().sort((a, b) => {
-                return b.votes - a.votes || b.timestamp - a.timestamp;
-            });
-
+            const sortedItems = feedbackItems.slice().sort((a, b) => b.votes - a.votes || b.timestamp - a.timestamp);
             sortedItems.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'feedback-item';
@@ -403,11 +372,12 @@
             updateDashboard();
             setTimeout(() => document.getElementById('intro').classList.add('fade'), 3000);
             setInterval(updateActiveCount, 5000);
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/service-worker.js').catch(err => console.log('Service Worker registration failed:', err));
+            }
         };
 
-        document.getElementById('feedback-input').addEventListener('input', (e) => {
-            updateCategoryPreview(e.target.value);
-        });
+        document.getElementById('feedback-input').addEventListener('input', (e) => updateCategoryPreview(e.target.value));
         document.getElementById('feedback-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') submitFeedback();
         });
