@@ -2,11 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Citizen Feedback Grid: Amplify your voice with real-time trends. Free for the U.S., built for the world.">
+    <meta name="theme-color" content="#00d4ff">
     <title>Citizen Feedback Grid</title>
     <link rel="manifest" href="/manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -14,31 +18,36 @@
             background: #1a1a1a;
             color: #e0e0e0;
             margin: 0;
-            padding: 20px;
+            padding: 0 20px;
             line-height: 1.6;
-            overscroll-behavior: none; /* Prevent overscroll bounce */
+            overscroll-behavior: none;
+            overflow-x: hidden;
         }
         h1 {
-            font-size: 2.5em;
+            font-size: clamp(1.5em, 5vw, 2.5em);
             color: #00d4ff;
             text-align: center;
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-bottom: 10px;
+            margin: 20px 0 10px;
             text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
         }
         #subtitle {
             text-align: center;
-            font-size: 1.2em;
+            font-size: clamp(0.9em, 3vw, 1.2em);
             color: #ff4081;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         #feedback-form {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
-            position: relative;
+            position: sticky;
+            top: 0;
+            background: #1a1a1a;
+            z-index: 10;
+            padding: 10px 0;
         }
         #feedback-input {
             flex: 1;
@@ -110,7 +119,6 @@
         }
         .feedback-text {
             flex: 1;
-            color: #e0e0e0;
             min-width: 150px;
         }
         .feedback-meta {
@@ -196,12 +204,12 @@
     <h1>Citizen Feedback Grid <span style="font-size: 0.5em; vertical-align: top;">🇺🇸</span></h1>
     <div id="subtitle">Built for the U.S., Ready for the World</div>
     <div id="feedback-form">
-        <select id="submission-type">
+        <select id="submission-type" aria-label="Submission Type">
             <option value="Feedback">Feedback</option>
             <option value="Issue">Issue</option>
             <option value="Idea">Idea</option>
         </select>
-        <input type="text" id="feedback-input" maxlength="100" placeholder="Transmit your signal (100 chars max)...">
+        <input type="text" id="feedback-input" maxlength="100" placeholder="Transmit your signal (100 chars max)..." aria-label="Feedback Input">
         <div id="category-preview"></div>
         <button onclick="submitFeedback()">Send</button>
         <button id="clear-btn" onclick="clearData()">Clear Grid</button>
@@ -323,7 +331,7 @@
                     <span class="feedback-text">${item.text}</span>
                     <span class="feedback-meta">[${item.type} - ${item.category}]</span>
                     <span class="feedback-meta">Power: ${item.votes}</span>
-                    <button class="upvote-btn" onclick="upvote(${feedbackItems.indexOf(item)})">Amplify</button>
+                    <button class="upvote-btn" onclick="upvote(${feedbackItems.indexOf(item)})" aria-label="Upvote">Amplify</button>
                 `;
                 if (index < 3) {
                     visibleList.appendChild(div);
@@ -355,11 +363,7 @@
 
         function updateCategoryPreview(text) {
             const preview = document.getElementById('category-preview');
-            if (text) {
-                preview.textContent = `Filing under: ${categorize(text)}`;
-            } else {
-                preview.textContent = '';
-            }
+            preview.textContent = text ? `Filing under: ${categorize(text)}` : '';
         }
 
         function updateActiveCount() {
@@ -373,14 +377,13 @@
             setTimeout(() => document.getElementById('intro').classList.add('fade'), 3000);
             setInterval(updateActiveCount, 5000);
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/service-worker.js').catch(err => console.log('Service Worker registration failed:', err));
+                navigator.serviceWorker.register('/service-worker.js').catch(err => console.log('Service Worker failed:', err));
             }
+            window.addEventListener('beforeunload', () => localStorage.setItem('feedbackItems', JSON.stringify(feedbackItems)));
         };
 
-        document.getElementById('feedback-input').addEventListener('input', (e) => updateCategoryPreview(e.target.value));
-        document.getElementById('feedback-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') submitFeedback();
-        });
+        document.getElementById('feedback-input').addEventListener('input', e => updateCategoryPreview(e.target.value));
+        document.getElementById('feedback-input').addEventListener('keypress', e => { if (e.key === 'Enter') submitFeedback(); });
     </script>
 </body>
 </html>
